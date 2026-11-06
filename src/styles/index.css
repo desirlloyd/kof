@@ -1,0 +1,64 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+@layer base {
+  body {
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
+  }
+}
+
+/* Custom Tap-tap Utilities */
+.tap-border {
+  border-width: 2px;
+  border-color: var(--border-color);
+}
+
+.tap-shadow-solid {
+  box-shadow: var(--shadow-solid);
+}
+
+.tap-shadow-safran {
+  box-shadow: var(--shadow-safran);
+}
+
+.tap-shadow-turquoise {
+  box-shadow: var(--shadow-turquoise);
+}
+
+.tap-shadow-hibiscus {
+  box-shadow: var(--shadow-hibiscus);
+}
+
+.tap-card {
+  background-color: var(--bg-surface-1);
+  border: 2px solid var(--border-color);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-solid);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tap-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.45);
+}
+
+/* Background geometric pattern */
+.tap-bg-pattern {
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 180, 0, 0.08) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+html.light .tap-bg-pattern {
+  background-image: radial-gradient(circle at 1px 1px, rgba(212, 146, 0, 0.12) 1px, transparent 0);
+}

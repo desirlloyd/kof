@@ -1,0 +1,42 @@
+:root {
+  --font-display: 'Bricolage Grotesque', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Tap-tap Noir (Dark Default) */
+  --bg-canvas: #0E1020;
+  --bg-surface-1: #171A30;
+  --bg-surface-2: #20243F;
+  --border-color: #2D3357;
+  --text-primary: #FFF6E5;
+  --text-muted: #A9ABC4;
+  
+  --accent-safran: #FFB400;
+  --accent-turquoise: #19D3C5;
+  --accent-hibiscus: #FF4D6D;
+  --accent-lime: #B6F23A;
+  
+  --shadow-solid: 4px 4px 0px rgba(0, 0, 0, 0.45);
+  --shadow-safran: 4px 4px 0px #FFB400;
+  --shadow-turquoise: 4px 4px 0px #19D3C5;
+  --shadow-hibiscus: 4px 4px 0px #FF4D6D;
+}
+
+html.light {
+  --bg-canvas: #FDFBF7;
+  --bg-surface-1: #F4EFE6;
+  --bg-surface-2: #EAE3D2;
+  --border-color: #D6CDBC;
+  --text-primary: #171A30;
+  --text-muted: #5E627B;
+
+  --accent-safran: #D49200;
+  --accent-turquoise: #0B9C90;
+  --accent-hibiscus: #E0294A;
+  --accent-lime: #6EA610;
+
+  --shadow-solid: 4px 4px 0px rgba(23, 26, 48, 0.15);
+  --shadow-safran: 4px 4px 0px #D49200;
+  --shadow-turquoise: 4px 4px 0px #0B9C90;
+  --shadow-hibiscus: 4px 4px 0px #E0294A;
+}
