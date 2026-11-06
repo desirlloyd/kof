@@ -81,43 +81,45 @@ export const AuthView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 bg-[#0E1020] tap-bg-pattern relative overflow-hidden">
+    <div className="min-h-[100dvh] w-full flex flex-col items-center justify-center p-3 sm:p-6 bg-[#0E1020] tap-bg-pattern relative overflow-x-hidden">
       {/* Halo décoratif inspiré du soleil créole */}
-      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-[#FFB400]/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-[#19D3C5]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 -left-32 w-80 sm:w-96 h-80 sm:h-96 bg-[#FFB400]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 -right-32 w-80 sm:w-96 h-80 sm:h-96 bg-[#19D3C5]/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Language Switcher en haut à droite */}
-      <div className="absolute top-6 right-6 flex items-center gap-1.5 bg-[#171A30] border-2 border-[#2D3357] p-1 rounded-xl text-xs font-semibold z-10">
-        {(['fr', 'ht', 'en'] as const).map((lang) => (
-          <button
-            key={lang}
-            onClick={() => {
-              i18n.changeLanguage(lang);
-              localStorage.setItem('kof_language', lang);
-            }}
-            className={`px-2.5 py-1 rounded-lg uppercase transition-colors ${
-              i18n.language === lang
-                ? 'bg-[#FFB400] text-[#0E1020]'
-                : 'text-[#A9ABC4] hover:text-[#FFF6E5]'
-            }`}
-          >
-            {lang}
-          </button>
-        ))}
+      {/* Language Switcher */}
+      <div className="w-full max-w-md flex justify-end mb-3 sm:mb-4 px-1 z-10">
+        <div className="flex items-center gap-1 bg-[#171A30] border-2 border-[#2D3357] p-1 rounded-xl text-[11px] font-semibold">
+          {(['fr', 'ht', 'en'] as const).map((lang) => (
+            <button
+              key={lang}
+              onClick={() => {
+                i18n.changeLanguage(lang);
+                localStorage.setItem('kof_language', lang);
+              }}
+              className={`px-2 py-1 rounded-lg uppercase transition-colors min-h-[32px] min-w-[32px] flex items-center justify-center ${
+                i18n.language === lang
+                  ? 'bg-[#FFB400] text-[#0E1020] font-bold'
+                  : 'text-[#A9ABC4] hover:text-[#FFF6E5]'
+              }`}
+            >
+              {lang}
+            </button>
+          ))}
+        </div>
       </div>
 
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-[#171A30] border-2 border-[#2D3357] rounded-3xl p-6 md:p-8 tap-shadow-solid relative z-10"
+        className="w-full max-w-md bg-[#171A30] border-2 border-[#2D3357] rounded-3xl p-5 sm:p-6 md:p-8 tap-shadow-solid relative z-10 my-auto"
       >
         {/* Mascotte Ti Kòf avec bulle d'expression */}
-        <div className="flex flex-col items-center mb-6">
-          <TiKof mood={mascotMood} size="lg" bubbleText={mascotBubble} />
-          <h1 className="text-3xl font-extrabold text-[#FFF6E5] tracking-tight mt-3 text-center">
+        <div className="flex flex-col items-center mb-5 sm:mb-6">
+          <TiKof mood={mascotMood} size="md" bubbleText={mascotBubble} />
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#FFF6E5] tracking-tight mt-2 text-center">
             Kòf
           </h1>
-          <p className="text-xs md:text-sm text-[#FFB400] font-medium tracking-wide">
+          <p className="text-xs sm:text-sm text-[#FFB400] font-medium tracking-wide">
             {t('app.tagline')}
           </p>
         </div>
@@ -131,20 +133,20 @@ export const AuthView: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 className="space-y-4"
               >
-                <div className="p-4 bg-[#20243F] border border-[#2D3357] rounded-2xl flex items-start gap-3">
-                  <Shield className="w-6 h-6 text-[#19D3C5] shrink-0 mt-0.5" />
+                <div className="p-3.5 sm:p-4 bg-[#20243F] border border-[#2D3357] rounded-2xl flex items-start gap-3">
+                  <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-[#19D3C5] shrink-0 mt-0.5" />
                   <div>
-                    <h3 className="text-sm font-bold text-[#FFF6E5]">
+                    <h3 className="text-xs sm:text-sm font-bold text-[#FFF6E5]">
                       {t('auth.step1Title')}
                     </h3>
-                    <p className="text-xs text-[#A9ABC4] mt-1 leading-relaxed">
+                    <p className="text-[11px] sm:text-xs text-[#A9ABC4] mt-1 leading-relaxed">
                       {t('auth.step1Desc')}
                     </p>
                   </div>
                 </div>
                 <Button
                   variant="primary"
-                  className="w-full"
+                  className="w-full min-h-[44px]"
                   size="lg"
                   onClick={() => setStep(2)}
                   icon={<ArrowRight className="w-5 h-5" />}
@@ -160,13 +162,13 @@ export const AuthView: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 className="space-y-4"
               >
-                <div className="p-4 bg-[#FF4D6D]/15 border-2 border-[#FF4D6D] rounded-2xl flex items-start gap-3">
-                  <KeyRound className="w-6 h-6 text-[#FF4D6D] shrink-0 mt-0.5" />
+                <div className="p-3.5 sm:p-4 bg-[#FF4D6D]/15 border-2 border-[#FF4D6D] rounded-2xl flex items-start gap-3">
+                  <KeyRound className="w-5 h-5 sm:w-6 sm:h-6 text-[#FF4D6D] shrink-0 mt-0.5" />
                   <div>
-                    <h3 className="text-sm font-bold text-[#FFF6E5]">
+                    <h3 className="text-xs sm:text-sm font-bold text-[#FFF6E5]">
                       {t('auth.step2Title')}
                     </h3>
-                    <p className="text-xs text-[#FFF6E5]/90 mt-1 leading-relaxed">
+                    <p className="text-[11px] sm:text-xs text-[#FFF6E5]/90 mt-1 leading-relaxed">
                       {t('auth.step2Desc')}
                     </p>
                   </div>
@@ -174,14 +176,14 @@ export const AuthView: React.FC = () => {
                 <div className="flex gap-2">
                   <Button
                     variant="secondary"
-                    className="flex-1"
+                    className="flex-1 min-h-[44px]"
                     onClick={() => setStep(1)}
                   >
                     Retour
                   </Button>
                   <Button
                     variant="primary"
-                    className="flex-1"
+                    className="flex-1 min-h-[44px]"
                     onClick={() => setStep(3)}
                     icon={<ArrowRight className="w-5 h-5" />}
                   >
@@ -196,7 +198,7 @@ export const AuthView: React.FC = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 onSubmit={handleCreateVault}
-                className="space-y-4"
+                className="space-y-3.5 sm:space-y-4"
               >
                 <Input
                   label={t('auth.step3Title')}
@@ -211,7 +213,7 @@ export const AuthView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="text-[#A9ABC4] hover:text-[#FFF6E5] p-1"
+                      className="text-[#A9ABC4] hover:text-[#FFF6E5] p-2 min-h-[40px] min-w-[40px] flex items-center justify-center"
                     >
                       {showPassword ? (
                         <EyeOff className="w-4 h-4" />
@@ -240,10 +242,11 @@ export const AuthView: React.FC = () => {
                   </p>
                 )}
 
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-2 pt-1 sm:pt-2">
                   <Button
                     type="button"
                     variant="secondary"
+                    className="min-h-[44px]"
                     onClick={() => setStep(2)}
                   >
                     Retour
@@ -251,7 +254,7 @@ export const AuthView: React.FC = () => {
                   <Button
                     type="submit"
                     variant="primary"
-                    className="flex-1"
+                    className="flex-1 min-h-[44px]"
                     size="lg"
                     isLoading={isLoading}
                     icon={<CheckCircle2 className="w-5 h-5" />}
@@ -263,7 +266,7 @@ export const AuthView: React.FC = () => {
             )}
 
             {/* Stepper dots */}
-            <div className="flex justify-center gap-2 mt-6">
+            <div className="flex justify-center gap-2 mt-5">
               {[1, 2, 3].map((s) => (
                 <div
                   key={s}
@@ -292,7 +295,7 @@ export const AuthView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="text-[#A9ABC4] hover:text-[#FFF6E5] p-1"
+                    className="text-[#A9ABC4] hover:text-[#FFF6E5] p-2 min-h-[40px] min-w-[40px] flex items-center justify-center"
                   >
                     {showPassword ? (
                       <EyeOff className="w-4 h-4" />
@@ -308,7 +311,7 @@ export const AuthView: React.FC = () => {
               type="submit"
               variant="primary"
               size="lg"
-              className="w-full mt-2"
+              className="w-full mt-2 min-h-[46px]"
               isLoading={isLoading}
               icon={<Lock className="w-5 h-5" />}
             >

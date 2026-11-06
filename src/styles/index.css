@@ -6,7 +6,8 @@
     background-color: var(--bg-canvas);
     color: var(--text-primary);
     font-family: var(--font-body);
-    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-tap-highlight-color: transparent;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -61,4 +62,14 @@
 
 html.light .tap-bg-pattern {
   background-image: radial-gradient(circle at 1px 1px, rgba(212, 146, 0, 0.12) 1px, transparent 0);
+}
+
+/* Hide scrollbars for mobile horizontal category chip strips */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

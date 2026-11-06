@@ -16,6 +16,8 @@ import {
   UserCheck,
   ClipboardCopy,
   FolderLock,
+  ArrowLeft,
+  X,
 } from 'lucide-react';
 import { useAuthStore } from '../auth/authStore';
 import { useVaultStore } from './vaultStore';
@@ -150,8 +152,18 @@ export const DashboardView: React.FC = () => {
     if (target) handleEditEntry(target);
   };
 
+  const categories = [
+    { id: 'all' as const, label: t('vault.allEntries'), icon: FolderLock },
+    { id: 'favorites' as const, label: t('vault.favorites'), icon: Star },
+    { id: 'login' as const, label: t('vault.categories.login'), icon: Globe },
+    { id: 'card' as const, label: t('vault.categories.card'), icon: CreditCard },
+    { id: 'note' as const, label: t('vault.categories.note'), icon: FileText },
+    { id: 'server' as const, label: t('vault.categories.server'), icon: Server },
+    { id: 'identity' as const, label: t('vault.categories.identity'), icon: UserCheck },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#0E1020] text-[#FFF6E5] flex flex-col font-sans">
+    <div className="min-h-[100dvh] bg-[#0E1020] text-[#FFF6E5] flex flex-col font-sans select-none">
       {/* Top Clipboard Countdown Notice */}
       <AnimatePresence>
         {clipboardSecondsLeft !== null && (
@@ -159,21 +171,23 @@ export const DashboardView: React.FC = () => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="bg-[#FFB400] text-[#0E1020] px-4 py-1.5 text-xs font-bold flex items-center justify-center gap-2 overflow-hidden shadow-md"
+            className="bg-[#FFB400] text-[#0E1020] px-3 py-1.5 text-xs font-bold flex items-center justify-center gap-2 overflow-hidden shadow-md sticky top-0 z-40"
           >
-            <ClipboardCopy className="w-4 h-4 animate-bounce" />
-            <span>{t('vault.clipboardTimer', { seconds: clipboardSecondsLeft })}</span>
+            <ClipboardCopy className="w-4 h-4 animate-bounce shrink-0" />
+            <span className="truncate">
+              {t('vault.clipboardTimer', { seconds: clipboardSecondsLeft })}
+            </span>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Main Navbar */}
-      <header className="h-16 border-b-2 border-[#2D3357] bg-[#171A30] px-4 md:px-8 flex items-center justify-between gap-4 sticky top-0 z-30">
+      <header className="h-14 sm:h-16 border-b-2 border-[#2D3357] bg-[#171A30] px-3 sm:px-6 md:px-8 flex items-center justify-between gap-3 sticky top-0 z-30">
         {/* Brand */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0">
           <TiKof mood="happy" size="sm" />
-          <div>
-            <h1 className="text-xl font-extrabold tracking-tight text-[#FFF6E5]">
+          <div className="leading-tight">
+            <h1 className="text-lg sm:text-xl font-extrabold tracking-tight text-[#FFF6E5]">
               Kòf
             </h1>
             <p className="text-[10px] text-[#FFB400] font-semibold hidden sm:block">
@@ -182,8 +196,8 @@ export const DashboardView: React.FC = () => {
           </div>
         </div>
 
-        {/* Global Search Bar */}
-        <div className="max-w-md w-full relative hidden sm:block">
+        {/* Desktop Global Search Bar */}
+        <div className="max-w-md w-full relative hidden md:block">
           <Search className="w-4 h-4 text-[#A9ABC4] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
@@ -195,45 +209,48 @@ export const DashboardView: React.FC = () => {
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Health Pill Button */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Desktop Health Pill Button */}
           <button
             onClick={() => setCurrentView(currentView === 'vault' ? 'audit' : 'vault')}
-            className={`px-3 py-1.5 rounded-xl border-2 text-xs font-bold flex items-center gap-1.5 transition-all ${
+            className={`hidden md:flex px-3 py-1.5 rounded-xl border-2 text-xs font-bold items-center gap-1.5 transition-all ${
               currentView === 'audit'
                 ? 'border-[#B6F23A] bg-[#B6F23A]/20 text-[#B6F23A]'
                 : 'border-[#2D3357] bg-[#20243F] text-[#FFF6E5] hover:border-[#B6F23A]'
             }`}
           >
             <ShieldCheck className="w-4 h-4 text-[#B6F23A]" />
-            <span className="hidden md:inline">{t('audit.title')}</span>
+            <span>{t('audit.title')}</span>
             <span className="font-mono text-[#B6F23A]">{audit.score}%</span>
           </button>
 
-          {/* Generator Button */}
+          {/* Desktop Generator Button */}
           <Button
             size="sm"
             variant="secondary"
             onClick={() => setIsGeneratorOpen(true)}
+            className="hidden lg:inline-flex"
             icon={<Sparkles className="w-4 h-4 text-[#FFB400]" />}
           >
-            <span className="hidden lg:inline">{t('generator.title')}</span>
+            <span>{t('generator.title')}</span>
           </Button>
 
-          {/* New Entry Button */}
+          {/* New Entry Button (Desktop + Mobile) */}
           <Button
             size="sm"
             variant="primary"
             onClick={handleCreateNew}
             icon={<Plus className="w-4 h-4" />}
+            className="h-9 px-3 text-xs sm:text-sm font-bold"
           >
             <span className="hidden sm:inline">{t('vault.newEntry')}</span>
+            <span className="sm:hidden">Nouveau</span>
           </Button>
 
-          {/* Settings Button */}
+          {/* Desktop Settings Button */}
           <button
             onClick={() => setIsSettingsOpen(true)}
-            className="p-2 text-[#A9ABC4] hover:text-[#FFF6E5] rounded-xl hover:bg-[#20243F] transition-colors"
+            className="hidden md:flex p-2 text-[#A9ABC4] hover:text-[#FFF6E5] rounded-xl hover:bg-[#20243F] transition-colors"
             title={t('settings.title')}
           >
             <Settings className="w-5 h-5" />
@@ -242,31 +259,89 @@ export const DashboardView: React.FC = () => {
           {/* Lock Button */}
           <button
             onClick={lockVault}
-            className="p-2 text-[#FF4D6D] hover:bg-[#FF4D6D]/15 rounded-xl transition-colors"
+            className="p-2 text-[#FF4D6D] hover:bg-[#FF4D6D]/15 rounded-xl transition-colors active:scale-95"
             title="Verrouiller (Ctrl+Shift+L)"
+            aria-label="Verrouiller"
           >
-            <Lock className="w-5 h-5" />
+            <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
       </header>
 
-      {/* Mobile Search Bar */}
-      <div className="p-3 sm:hidden bg-[#171A30] border-b border-[#2D3357]">
-        <div className="relative">
-          <Search className="w-4 h-4 text-[#A9ABC4] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            type="text"
-            placeholder={t('vault.searchPlaceholder')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#0E1020] border-2 border-[#2D3357] text-[#FFF6E5] placeholder-[#A9ABC4]/60 rounded-xl pl-9 pr-3 py-1.5 text-xs outline-none focus:border-[#FFB400]"
-          />
+      {/* Mobile Search & Category Chips Strip (Only on Vault view) */}
+      {currentView === 'vault' && (
+        <div className="md:hidden bg-[#171A30] border-b border-[#2D3357] px-3 pt-2 pb-2.5 space-y-2 sticky top-14 sm:top-16 z-20">
+          {/* Mobile Search Input */}
+          <div className="relative">
+            <Search className="w-4 h-4 text-[#A9ABC4] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              placeholder={t('vault.searchPlaceholder')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-[#0E1020] border-2 border-[#2D3357] text-[#FFF6E5] placeholder-[#A9ABC4]/60 rounded-xl pl-9 pr-8 py-2 text-xs outline-none focus:border-[#FFB400]"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A9ABC4] p-1"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Horizontally Scrollable Category Filter Chips */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 -mx-1 px-1">
+            {categories.map((cat) => {
+              const Icon = cat.icon;
+              const count =
+                cat.id === 'all'
+                  ? entries.length
+                  : cat.id === 'favorites'
+                  ? entries.filter((e) => e.favorite).length
+                  : entries.filter((e) => e.category === cat.id).length;
+              const isSelected = selectedCategory === cat.id && !selectedTag;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    setSelectedCategory(cat.id);
+                    setSelectedTag(null);
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 border-2 transition-all ${
+                    isSelected
+                      ? 'border-[#FFB400] bg-[#FFB400]/20 text-[#FFB400]'
+                      : 'border-[#2D3357] bg-[#20243F] text-[#A9ABC4]'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{cat.label}</span>
+                  <span className="text-[10px] font-mono opacity-80">({count})</span>
+                </button>
+              );
+            })}
+
+            {allTags.map((tag) => (
+              <button
+                key={tag}
+                onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
+                className={`px-2.5 py-1.5 rounded-xl text-xs font-mono whitespace-nowrap shrink-0 border-2 transition-all ${
+                  selectedTag === tag
+                    ? 'border-[#FF4D6D] bg-[#FF4D6D]/20 text-[#FF4D6D]'
+                    : 'border-[#2D3357] bg-[#20243F] text-[#A9ABC4]'
+                }`}
+              >
+                #{tag}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main Container */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
+      <div className="flex-1 flex overflow-hidden pb-16 md:pb-0">
+        {/* Desktop Sidebar */}
         <aside className="w-64 border-r-2 border-[#2D3357] bg-[#171A30] p-4 flex flex-col gap-6 hidden md:flex shrink-0 overflow-y-auto">
           {/* Main Navigation */}
           <div className="space-y-1">
@@ -383,11 +458,11 @@ export const DashboardView: React.FC = () => {
         </aside>
 
         {/* View Content (Vault or Audit) */}
-        <main className="flex-1 p-4 md:p-6 overflow-y-auto tap-bg-pattern">
+        <main className="flex-1 p-3 sm:p-5 md:p-6 overflow-y-auto tap-bg-pattern">
           {currentView === 'audit' ? (
             <AuditView onSelectEntryToFix={handleFixFromAudit} />
           ) : (
-            <div className="h-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="h-full grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
               {/* Left Column: Entries List */}
               <div
                 className={`flex flex-col gap-3 ${
@@ -395,8 +470,8 @@ export const DashboardView: React.FC = () => {
                 }`}
               >
                 {/* Active Category Title & Count */}
-                <div className="flex items-center justify-between pb-2">
-                  <h2 className="text-base font-extrabold text-[#FFF6E5] uppercase tracking-wide">
+                <div className="flex items-center justify-between px-1">
+                  <h2 className="text-sm sm:text-base font-extrabold text-[#FFF6E5] uppercase tracking-wide truncate">
                     {selectedCategory === 'all'
                       ? t('vault.allEntries')
                       : selectedCategory === 'favorites'
@@ -404,20 +479,20 @@ export const DashboardView: React.FC = () => {
                       : t(`vault.categories.${selectedCategory}`)}
                     {selectedTag && ` (#${selectedTag})`}
                   </h2>
-                  <span className="text-xs font-mono font-bold text-[#FFB400]">
-                    {filteredEntries.length} secrets
+                  <span className="text-xs font-mono font-bold text-[#FFB400] shrink-0">
+                    {filteredEntries.length} {filteredEntries.length > 1 ? 'secrets' : 'secret'}
                   </span>
                 </div>
 
                 {/* Empty State */}
                 {filteredEntries.length === 0 ? (
-                  <div className="p-8 bg-[#171A30] border-2 border-[#2D3357] rounded-3xl tap-shadow-solid flex flex-col items-center justify-center text-center my-auto">
+                  <div className="p-6 sm:p-8 bg-[#171A30] border-2 border-[#2D3357] rounded-3xl tap-shadow-solid flex flex-col items-center justify-center text-center my-auto min-h-[300px]">
                     <TiKof
                       mood="worried"
-                      size="lg"
+                      size="md"
                       bubbleText={t('mascot.empty')}
                     />
-                    <h3 className="text-lg font-bold text-[#FFF6E5] mt-4">
+                    <h3 className="text-base sm:text-lg font-bold text-[#FFF6E5] mt-4">
                       {t('vault.noEntries')}
                     </h3>
                     <p className="text-xs text-[#A9ABC4] mt-1 max-w-xs">
@@ -434,7 +509,7 @@ export const DashboardView: React.FC = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-3 overflow-y-auto pr-1">
+                  <div className="space-y-2.5 sm:space-y-3 overflow-y-auto">
                     {filteredEntries.map((entry) => (
                       <EntryCard
                         key={entry.id}
@@ -451,13 +526,15 @@ export const DashboardView: React.FC = () => {
               {activeEntry ? (
                 <div className="col-span-12 lg:col-span-7 xl:col-span-8 flex flex-col h-full">
                   {/* Mobile Back Button to Entry List */}
-                  <div className="lg:hidden mb-3">
+                  <div className="lg:hidden mb-2">
                     <Button
                       size="sm"
                       variant="secondary"
                       onClick={() => setActiveEntryId(null)}
+                      icon={<ArrowLeft className="w-4 h-4" />}
+                      className="w-full justify-start text-xs font-bold py-2.5"
                     >
-                      ← Retour à la liste
+                      Retour aux secrets
                     </Button>
                   </div>
                   <EntryDetailView
@@ -481,7 +558,62 @@ export const DashboardView: React.FC = () => {
         </main>
       </div>
 
-      {/* Modals */}
+      {/* Mobile Fixed Bottom Navigation Bar (Thumb Zone) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#171A30] border-t-2 border-[#2D3357] px-3 flex items-center justify-around z-30 shadow-[0_-4px_12px_rgba(0,0,0,0.4)]">
+        {/* Tab 1: Secrets */}
+        <button
+          onClick={() => {
+            setCurrentView('vault');
+            setActiveEntryId(null);
+          }}
+          className={`flex flex-col items-center justify-center flex-1 py-1 min-h-[48px] rounded-xl transition-all ${
+            currentView === 'vault'
+              ? 'text-[#FFB400]'
+              : 'text-[#A9ABC4] hover:text-[#FFF6E5]'
+          }`}
+        >
+          <FolderLock className="w-5 h-5" />
+          <span className="text-[11px] font-bold mt-0.5">Secrets</span>
+        </button>
+
+        {/* Tab 2: Santé */}
+        <button
+          onClick={() => setCurrentView('audit')}
+          className={`flex flex-col items-center justify-center flex-1 py-1 min-h-[48px] rounded-xl relative transition-all ${
+            currentView === 'audit'
+              ? 'text-[#B6F23A]'
+              : 'text-[#A9ABC4] hover:text-[#FFF6E5]'
+          }`}
+        >
+          <div className="relative">
+            <ShieldCheck className="w-5 h-5" />
+            <span className="absolute -top-1 -right-3 text-[9px] font-mono font-bold bg-[#B6F23A] text-[#0E1020] px-1 rounded-full">
+              {audit.score}%
+            </span>
+          </div>
+          <span className="text-[11px] font-bold mt-0.5">{t('audit.title')}</span>
+        </button>
+
+        {/* Tab 3: Générateur */}
+        <button
+          onClick={() => setIsGeneratorOpen(true)}
+          className="flex flex-col items-center justify-center flex-1 py-1 min-h-[48px] rounded-xl text-[#A9ABC4] hover:text-[#19D3C5] transition-all"
+        >
+          <Sparkles className="w-5 h-5 text-[#19D3C5]" />
+          <span className="text-[11px] font-bold mt-0.5">Clés</span>
+        </button>
+
+        {/* Tab 4: Paramètres */}
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className="flex flex-col items-center justify-center flex-1 py-1 min-h-[48px] rounded-xl text-[#A9ABC4] hover:text-[#FFF6E5] transition-all"
+        >
+          <Settings className="w-5 h-5" />
+          <span className="text-[11px] font-bold mt-0.5">{t('settings.title')}</span>
+        </button>
+      </nav>
+
+      {/* Modals with responsive mobile behavior */}
       <EntryFormModal
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}

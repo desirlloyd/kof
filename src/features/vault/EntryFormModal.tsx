@@ -94,57 +94,68 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
     <>
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="w-full max-w-xl bg-[#171A30] border-2 border-[#2D3357] rounded-3xl p-6 md:p-8 tap-shadow-solid my-8 relative"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 40 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-xl bg-[#171A30] border-t-2 sm:border-2 border-[#2D3357] rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 md:p-8 tap-shadow-solid max-h-[92dvh] sm:max-h-[90vh] overflow-y-auto relative flex flex-col"
             >
+              {/* Mobile Drag Indicator */}
+              <div className="sm:hidden w-12 h-1 bg-[#2D3357] rounded-full mx-auto mb-3 shrink-0" />
+
               {/* Header */}
-              <div className="flex items-center justify-between pb-4 border-b border-[#2D3357] mb-6">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-[#2D3357] mb-4 sm:mb-6 shrink-0">
+                <div className="flex items-center gap-2.5">
                   <button
                     type="button"
                     onClick={() => setFavorite(!favorite)}
-                    className="p-1.5 rounded-xl hover:bg-[#20243F] transition-colors"
+                    className="p-1.5 rounded-xl hover:bg-[#20243F] transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
+                    aria-label="Toggle Favorite"
                   >
                     <Star
-                      className={`w-6 h-6 transition-colors ${
+                      className={`w-5 h-5 sm:w-6 sm:h-6 transition-colors ${
                         favorite ? 'fill-[#FFB400] text-[#FFB400]' : 'text-[#A9ABC4]'
                       }`}
                     />
                   </button>
-                  <h2 className="text-xl md:text-2xl font-bold text-[#FFF6E5]">
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#FFF6E5]">
                     {entryToEdit ? t('vault.editEntry') : t('vault.newEntry')}
                   </h2>
                 </div>
                 <button
                   onClick={onClose}
-                  className="text-[#A9ABC4] hover:text-[#FFF6E5] p-2 rounded-xl hover:bg-[#20243F]"
+                  className="text-[#A9ABC4] hover:text-[#FFF6E5] p-2 rounded-xl hover:bg-[#20243F] min-h-[40px] min-w-[40px] flex items-center justify-center"
+                  aria-label="Fermer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Formulaire */}
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4 pb-2">
                 {/* Catégories chips */}
-                <div className="flex flex-wrap gap-2 pb-2">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => setCategory(cat)}
-                      className={`px-3 py-1 rounded-xl text-xs font-semibold capitalize border-2 transition-all ${
-                        category === cat
-                          ? 'border-[#FFB400] bg-[#FFB400]/20 text-[#FFB400]'
-                          : 'border-[#2D3357] bg-[#20243F] text-[#A9ABC4] hover:text-[#FFF6E5]'
-                      }`}
-                    >
-                      {t(`vault.categories.${cat}`)}
-                    </button>
-                  ))}
+                <div>
+                  <label className="text-xs font-semibold text-[#A9ABC4] block mb-1.5">
+                    {t('vault.category')}
+                  </label>
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                    {categories.map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setCategory(cat)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize border-2 transition-all min-h-[36px] flex items-center ${
+                          category === cat
+                            ? 'border-[#FFB400] bg-[#FFB400]/20 text-[#FFB400]'
+                            : 'border-[#2D3357] bg-[#20243F] text-[#A9ABC4] hover:text-[#FFF6E5]'
+                        }`}
+                      >
+                        {t(`vault.categories.${cat}`)}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Titre */}
@@ -190,15 +201,17 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setIsGeneratorOpen(true)}
-                          className="p-1.5 text-[#FFB400] hover:text-[#ffbe1a] rounded-lg hover:bg-[#20243F]"
+                          className="p-1.5 text-[#FFB400] hover:text-[#ffbe1a] rounded-lg hover:bg-[#20243F] min-h-[36px] min-w-[36px] flex items-center justify-center"
                           title={t('vault.generate')}
+                          aria-label={t('vault.generate')}
                         >
                           <Sparkles className="w-4 h-4" />
                         </button>
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="p-1.5 text-[#A9ABC4] hover:text-[#FFF6E5] rounded-lg hover:bg-[#20243F]"
+                          className="p-1.5 text-[#A9ABC4] hover:text-[#FFF6E5] rounded-lg hover:bg-[#20243F] min-h-[36px] min-w-[36px] flex items-center justify-center"
+                          aria-label="Afficher ou masquer"
                         >
                           {showPassword ? (
                             <EyeOff className="w-4 h-4" />
@@ -237,14 +250,20 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
                 />
 
                 {/* Actions */}
-                <div className="flex justify-end gap-3 pt-4 border-t border-[#2D3357]">
-                  <Button type="button" variant="ghost" onClick={onClose}>
+                <div className="flex justify-end gap-2.5 pt-4 border-t border-[#2D3357] sticky bottom-0 bg-[#171A30]">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={onClose}
+                    className="min-h-[44px]"
+                  >
                     {t('vault.cancel')}
                   </Button>
                   <Button
                     type="submit"
                     variant="primary"
                     isLoading={isSubmitting}
+                    className="min-h-[44px] px-6"
                   >
                     {t('vault.save')}
                   </Button>

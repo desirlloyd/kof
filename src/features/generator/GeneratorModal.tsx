@@ -62,33 +62,38 @@ export const GeneratorModal: React.FC<GeneratorModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            className="w-full max-w-lg bg-[#171A30] border-2 border-[#FFB400] rounded-3xl p-6 tap-shadow-safran"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="w-full max-w-lg bg-[#171A30] border-t-2 sm:border-2 border-[#FFB400] rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 tap-shadow-safran max-h-[92dvh] sm:max-h-[90vh] overflow-y-auto"
           >
+            {/* Mobile Drag Indicator */}
+            <div className="sm:hidden w-12 h-1 bg-[#2D3357] rounded-full mx-auto mb-3 shrink-0" />
+
             {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-[#2D3357]">
+            <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-[#2D3357]">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-[#FFB400]" />
-                <h2 className="text-xl font-bold text-[#FFF6E5]">
+                <h2 className="text-lg sm:text-xl font-bold text-[#FFF6E5]">
                   {t('generator.title')}
                 </h2>
               </div>
               <button
                 onClick={onClose}
-                className="text-[#A9ABC4] hover:text-[#FFF6E5] p-1.5 rounded-lg hover:bg-[#20243F]"
+                className="text-[#A9ABC4] hover:text-[#FFF6E5] p-2 rounded-xl hover:bg-[#20243F] min-h-[40px] min-w-[40px] flex items-center justify-center"
+                aria-label="Fermer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Display de la clé générée */}
-            <div className="my-5 p-4 bg-[#0E1020] border-2 border-[#2D3357] rounded-2xl flex flex-col gap-3">
+            <div className="my-4 sm:my-5 p-3.5 sm:p-4 bg-[#0E1020] border-2 border-[#2D3357] rounded-2xl flex flex-col gap-3">
               <div className="flex items-center justify-between gap-3 overflow-hidden">
-                <span className="font-mono text-base md:text-lg text-[#FFF6E5] break-all select-all font-semibold tracking-wide">
+                <span className="font-mono text-sm sm:text-base md:text-lg text-[#FFF6E5] break-all select-all font-semibold tracking-wide">
                   {generatedPassword}
                 </span>
                 <div className="flex items-center gap-1.5 shrink-0">
@@ -98,6 +103,7 @@ export const GeneratorModal: React.FC<GeneratorModalProps> = ({
                     onClick={handleRegenerate}
                     aria-label={t('generator.regenerate')}
                     icon={<RefreshCw className="w-4 h-4" />}
+                    className="min-h-[40px] min-w-[40px] p-2"
                   >
                     {''}
                   </Button>
@@ -111,9 +117,9 @@ export const GeneratorModal: React.FC<GeneratorModalProps> = ({
             <div className="flex bg-[#0E1020] p-1 rounded-xl border border-[#2D3357] mb-4">
               <button
                 onClick={() => updateOption('mode', 'password')}
-                className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors min-h-[38px] ${
                   options.mode === 'password'
-                    ? 'bg-[#FFB400] text-[#0E1020]'
+                    ? 'bg-[#FFB400] text-[#0E1020] font-bold'
                     : 'text-[#A9ABC4] hover:text-[#FFF6E5]'
                 }`}
               >
@@ -121,9 +127,9 @@ export const GeneratorModal: React.FC<GeneratorModalProps> = ({
               </button>
               <button
                 onClick={() => updateOption('mode', 'passphrase')}
-                className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors min-h-[38px] ${
                   options.mode === 'passphrase'
-                    ? 'bg-[#19D3C5] text-[#0E1020]'
+                    ? 'bg-[#19D3C5] text-[#0E1020] font-bold'
                     : 'text-[#A9ABC4] hover:text-[#FFF6E5]'
                 }`}
               >
@@ -138,7 +144,7 @@ export const GeneratorModal: React.FC<GeneratorModalProps> = ({
                 <div>
                   <div className="flex justify-between text-xs font-semibold mb-1 text-[#FFF6E5]">
                     <span>{t('generator.length')}</span>
-                    <span className="font-mono text-[#FFB400] text-sm">
+                    <span className="font-mono text-[#FFB400] text-sm font-bold">
                       {options.length}
                     </span>
                   </div>
@@ -148,45 +154,45 @@ export const GeneratorModal: React.FC<GeneratorModalProps> = ({
                     max="48"
                     value={options.length}
                     onChange={(e) => updateOption('length', parseInt(e.target.value, 10))}
-                    className="w-full accent-[#FFB400] cursor-pointer"
+                    className="w-full accent-[#FFB400] cursor-pointer h-7"
                   />
                 </div>
 
                 {/* Toggles */}
-                <div className="grid grid-cols-2 gap-2 text-xs font-medium text-[#FFF6E5]">
-                  <label className="flex items-center gap-2 p-2 bg-[#20243F] rounded-xl cursor-pointer hover:border-[#FFB400] border border-transparent">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-medium text-[#FFF6E5]">
+                  <label className="flex items-center gap-2.5 p-2.5 bg-[#20243F] rounded-xl cursor-pointer hover:border-[#FFB400] border border-transparent min-h-[44px]">
                     <input
                       type="checkbox"
                       checked={options.uppercase}
                       onChange={(e) => updateOption('uppercase', e.target.checked)}
-                      className="accent-[#FFB400]"
+                      className="accent-[#FFB400] w-4 h-4"
                     />
                     <span>{t('generator.uppercase')}</span>
                   </label>
-                  <label className="flex items-center gap-2 p-2 bg-[#20243F] rounded-xl cursor-pointer hover:border-[#FFB400] border border-transparent">
+                  <label className="flex items-center gap-2.5 p-2.5 bg-[#20243F] rounded-xl cursor-pointer hover:border-[#FFB400] border border-transparent min-h-[44px]">
                     <input
                       type="checkbox"
                       checked={options.lowercase}
                       onChange={(e) => updateOption('lowercase', e.target.checked)}
-                      className="accent-[#FFB400]"
+                      className="accent-[#FFB400] w-4 h-4"
                     />
                     <span>{t('generator.lowercase')}</span>
                   </label>
-                  <label className="flex items-center gap-2 p-2 bg-[#20243F] rounded-xl cursor-pointer hover:border-[#FFB400] border border-transparent">
+                  <label className="flex items-center gap-2.5 p-2.5 bg-[#20243F] rounded-xl cursor-pointer hover:border-[#FFB400] border border-transparent min-h-[44px]">
                     <input
                       type="checkbox"
                       checked={options.numbers}
                       onChange={(e) => updateOption('numbers', e.target.checked)}
-                      className="accent-[#FFB400]"
+                      className="accent-[#FFB400] w-4 h-4"
                     />
                     <span>{t('generator.numbers')}</span>
                   </label>
-                  <label className="flex items-center gap-2 p-2 bg-[#20243F] rounded-xl cursor-pointer hover:border-[#FFB400] border border-transparent">
+                  <label className="flex items-center gap-2.5 p-2.5 bg-[#20243F] rounded-xl cursor-pointer hover:border-[#FFB400] border border-transparent min-h-[44px]">
                     <input
                       type="checkbox"
                       checked={options.symbols}
                       onChange={(e) => updateOption('symbols', e.target.checked)}
-                      className="accent-[#FFB400]"
+                      className="accent-[#FFB400] w-4 h-4"
                     />
                     <span>{t('generator.symbols')}</span>
                   </label>
@@ -198,7 +204,7 @@ export const GeneratorModal: React.FC<GeneratorModalProps> = ({
                 <div>
                   <div className="flex justify-between text-xs font-semibold mb-1 text-[#FFF6E5]">
                     <span>{t('generator.wordsCount')}</span>
-                    <span className="font-mono text-[#19D3C5] text-sm">
+                    <span className="font-mono text-[#19D3C5] text-sm font-bold">
                       {options.wordCount}
                     </span>
                   </div>
@@ -210,17 +216,17 @@ export const GeneratorModal: React.FC<GeneratorModalProps> = ({
                     onChange={(e) =>
                       updateOption('wordCount', parseInt(e.target.value, 10))
                     }
-                    className="w-full accent-[#19D3C5] cursor-pointer"
+                    className="w-full accent-[#19D3C5] cursor-pointer h-7"
                   />
                 </div>
               </div>
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-2 mt-6">
+            <div className="mt-5 pt-3 border-t border-[#2D3357]">
               <Button
                 variant="primary"
-                className="w-full"
+                className="w-full min-h-[46px]"
                 size="lg"
                 onClick={handleCopy}
                 icon={copied ? <Check className="w-5 h-5 text-[#0E1020]" /> : <Copy className="w-5 h-5" />}

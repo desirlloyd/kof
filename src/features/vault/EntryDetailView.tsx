@@ -67,11 +67,11 @@ export const EntryDetailView: React.FC<EntryDetailViewProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#171A30] border-2 border-[#2D3357] rounded-3xl p-6 md:p-8 tap-shadow-solid overflow-y-auto">
+    <div className="h-full flex flex-col bg-[#171A30] border-2 border-[#2D3357] rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 tap-shadow-solid overflow-y-auto">
       {/* Header */}
-      <div className="flex items-start justify-between pb-6 border-b border-[#2D3357] gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between pb-4 sm:pb-6 border-b border-[#2D3357] gap-3 sm:gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
             <Badge variant={entry.category}>
               {t(`vault.categories.${entry.category}`)}
             </Badge>
@@ -82,18 +82,19 @@ export const EntryDetailView: React.FC<EntryDetailViewProps> = ({
               </span>
             )}
           </div>
-          <h2 className="text-2xl md:text-3xl font-extrabold text-[#FFF6E5]">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-[#FFF6E5] break-words">
             {entry.title}
           </h2>
         </div>
 
         {/* Action icons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
           <Button
             size="sm"
             variant="secondary"
             onClick={() => toggleFavorite(entry.id)}
             aria-label="Toggle Favorite"
+            className="min-h-[38px] min-w-[38px] p-2"
             icon={
               <Star
                 className={`w-4 h-4 ${
@@ -110,6 +111,7 @@ export const EntryDetailView: React.FC<EntryDetailViewProps> = ({
             variant="turquoise"
             onClick={onEdit}
             icon={<Edit3 className="w-4 h-4" />}
+            className="min-h-[38px] text-xs font-bold px-3"
           >
             {t('vault.editEntry')}
           </Button>
@@ -120,6 +122,7 @@ export const EntryDetailView: React.FC<EntryDetailViewProps> = ({
             onClick={handleDelete}
             isLoading={isDeleting}
             icon={<Trash2 className="w-4 h-4" />}
+            className="min-h-[38px] min-w-[38px] p-2"
           >
             {''}
           </Button>
@@ -127,10 +130,10 @@ export const EntryDetailView: React.FC<EntryDetailViewProps> = ({
       </div>
 
       {/* Fields */}
-      <div className="py-6 space-y-5">
+      <div className="py-4 sm:py-6 space-y-4 sm:space-y-5">
         {/* URL Field */}
         {entry.url && (
-          <div className="p-4 bg-[#20243F] rounded-2xl border border-[#2D3357]">
+          <div className="p-3.5 sm:p-4 bg-[#20243F] rounded-2xl border border-[#2D3357]">
             <span className="text-xs font-semibold text-[#A9ABC4] block mb-1">
               {t('vault.url')}
             </span>
@@ -139,7 +142,7 @@ export const EntryDetailView: React.FC<EntryDetailViewProps> = ({
                 href={entry.url.startsWith('http') ? entry.url : `https://${entry.url}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-mono text-[#19D3C5] hover:underline flex items-center gap-1.5 truncate"
+                className="text-xs sm:text-sm font-mono text-[#19D3C5] hover:underline flex items-center gap-1.5 truncate"
               >
                 <Globe className="w-4 h-4 shrink-0" />
                 <span className="truncate">{entry.url}</span>
@@ -147,7 +150,8 @@ export const EntryDetailView: React.FC<EntryDetailViewProps> = ({
               </a>
               <button
                 onClick={() => handleCopy(entry.url, 'url')}
-                className="p-1.5 text-[#A9ABC4] hover:text-[#FFF6E5] rounded-lg hover:bg-[#171A30]"
+                className="p-2 text-[#A9ABC4] hover:text-[#FFF6E5] rounded-lg hover:bg-[#171A30] min-h-[36px] min-w-[36px] flex items-center justify-center shrink-0"
+                aria-label="Copier l'URL"
               >
                 {copiedField === 'url' ? (
                   <Check className="w-4 h-4 text-[#B6F23A]" />
@@ -161,18 +165,18 @@ export const EntryDetailView: React.FC<EntryDetailViewProps> = ({
 
         {/* Username Field */}
         {entry.username && (
-          <div className="p-4 bg-[#20243F] rounded-2xl border border-[#2D3357]">
+          <div className="p-3.5 sm:p-4 bg-[#20243F] rounded-2xl border border-[#2D3357]">
             <span className="text-xs font-semibold text-[#A9ABC4] block mb-1">
               {t('vault.username')}
             </span>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-sm md:text-base font-mono text-[#FFF6E5] font-semibold truncate flex items-center gap-2">
-                <User className="w-4 h-4 text-[#A9ABC4]" />
-                {entry.username}
+              <span className="text-xs sm:text-sm md:text-base font-mono text-[#FFF6E5] font-semibold truncate flex items-center gap-2">
+                <User className="w-4 h-4 text-[#A9ABC4] shrink-0" />
+                <span className="truncate">{entry.username}</span>
               </span>
               <button
                 onClick={() => handleCopy(entry.username, 'user')}
-                className="px-3 py-1.5 bg-[#171A30] hover:bg-[#2D3357] text-[#FFF6E5] rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-[#2D3357]"
+                className="px-3 py-1.5 bg-[#171A30] hover:bg-[#2D3357] text-[#FFF6E5] rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-[#2D3357] min-h-[36px] shrink-0"
               >
                 {copiedField === 'user' ? (
                   <>
@@ -192,22 +196,23 @@ export const EntryDetailView: React.FC<EntryDetailViewProps> = ({
 
         {/* Password Field */}
         {entry.password && (
-          <div className="p-4 bg-[#20243F] rounded-2xl border-2 border-[#FFB400]/40">
-            <span className="text-xs font-semibold text-[#FFB400] block mb-1">
+          <div className="p-3.5 sm:p-4 bg-[#20243F] rounded-2xl border-2 border-[#FFB400]/40 space-y-3">
+            <span className="text-xs font-semibold text-[#FFB400] block">
               {t('vault.password')}
             </span>
-            <div className="flex items-center justify-between gap-3 mb-3">
-              <div className="flex items-center gap-2 overflow-hidden">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2 overflow-hidden min-w-0">
                 <Key className="w-4 h-4 text-[#FFB400] shrink-0" />
-                <span className="text-base md:text-lg font-mono text-[#FFF6E5] font-bold tracking-wider truncate">
+                <span className="text-sm sm:text-base md:text-lg font-mono text-[#FFF6E5] font-bold tracking-wider truncate">
                   {showPassword ? entry.password : '••••••••••••••••'}
                 </span>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="p-1.5 text-[#A9ABC4] hover:text-[#FFF6E5] rounded-xl hover:bg-[#171A30]"
+                  className="p-2 text-[#A9ABC4] hover:text-[#FFF6E5] rounded-xl hover:bg-[#171A30] min-h-[38px] min-w-[38px] flex items-center justify-center"
+                  aria-label="Afficher ou masquer le mot de passe"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -219,6 +224,7 @@ export const EntryDetailView: React.FC<EntryDetailViewProps> = ({
                   size="sm"
                   variant="primary"
                   onClick={() => handleCopy(entry.password, 'pass')}
+                  className="min-h-[38px] px-3.5 text-xs font-bold"
                   icon={
                     copiedField === 'pass' ? (
                       <Check className="w-3.5 h-3.5 text-[#0E1020]" />
@@ -237,7 +243,7 @@ export const EntryDetailView: React.FC<EntryDetailViewProps> = ({
 
         {/* Notes Field */}
         {entry.notes && (
-          <div className="p-4 bg-[#20243F] rounded-2xl border border-[#2D3357]">
+          <div className="p-3.5 sm:p-4 bg-[#20243F] rounded-2xl border border-[#2D3357]">
             <span className="text-xs font-semibold text-[#A9ABC4] block mb-2 flex items-center gap-1.5">
               <FileText className="w-4 h-4" />
               {t('vault.notes')}
