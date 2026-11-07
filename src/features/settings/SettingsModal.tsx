@@ -11,6 +11,8 @@ import {
   Download,
   Upload,
   AlertOctagon,
+  Users,
+  Check,
 } from 'lucide-react';
 import { useAuthStore } from '../auth/authStore';
 import { Button } from '../../components/ui/Button';
@@ -25,10 +27,22 @@ interface SettingsModalProps {
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const { t, i18n } = useTranslation();
-  const { preferences, updateUserPreferences, changeMasterPassword, wipeAllData } =
-    useAuthStore();
+  const {
+    preferences,
+    updateUserPreferences,
+    changeMasterPassword,
+    currentAccount,
+    renameAccount,
+    deleteCurrentAccount,
+    switchAccount,
+    wipeEverything,
+  } = useAuthStore();
 
   const [activeTab, setActiveTab] = useState<'general' | 'security' | 'backup'>('general');
+
+  // Profile name state
+  const [profileName, setProfileName] = useState(currentAccount?.name || '');
+  const [renameSuccess, setRenameSuccess] = useState(false);
 
   // Change master password state
   const [newPassword, setNewPassword] = useState('');
@@ -51,6 +65,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
   const handleAutoLockChange = async (minutes: number) => {
     await updateUserPreferences({ autoLockMinutes: minutes });
+  };
+
+  const handleRename = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profileName.trim()) return;
+    const success = await renameAccount(profileName);
+    if (success) {
+      setRenameSuccess(true);
+      setTimeout(() => setRenameSuccess(false), 2000);
+    }
   };
 
   const handleChangePasswordSubmit = async (e: React.FormEvent) => {
@@ -97,9 +121,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     reader.readAsText(file);
   };
 
+  const handleDeleteProfile = async () => {
+    if (window.confirm(t('settings.deleteAccountConfirm'))) {
+      await deleteCurrentAccount();
+      onClose();
+    }
+  };
+
   const handleWipe = async () => {
     if (window.confirm(t('settings.wipeConfirm'))) {
-      await wipeAllData();
+      await wipeEverything();
       onClose();
     }
   };
@@ -169,6 +200,54 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             {/* Tab 1: Général */}
             {activeTab === 'general' && (
               <div className="space-y-4 sm:space-y-6">
+                {/* Profil & Compte Actif */}
+                {currentAccount && (
+                  <div className="p-3.5 sm:p-4 bg-[#20243F] border border-[#2D3357] rounded-2xl space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div
+                          style={{ backgroundColor: currentAccount.avatarColor }}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center text-[#0E1020] font-black text-xs shrink-0"
+                        >
+                          {currentAccount.name.charAt(0).toUpperCase()}
+                        </div>
+                        <h3 className="font-bold text-xs sm:text-sm text-[#FFF6E5]">
+                          {t('settings.accountTitle')}
+                        </h3>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => {
+                          onClose();
+                          switchAccount();
+                        }}
+                        icon={<Users className="w-3.5 h-3.5" />}
+                        className="text-xs font-bold min-h-[34px]"
+                      >
+                        {t('settings.switchAccountBtn')}
+                      </Button>
+                    </div>
+
+                    <form onSubmit={handleRename} className="flex gap-2">
+                      <Input
+                        placeholder={t('settings.accountName')}
+                        value={profileName}
+                        onChange={(e) => setProfileName(e.target.value)}
+                        className="text-xs sm:text-sm"
+                      />
+                      <Button
+                        type="submit"
+                        variant="turquoise"
+                        size="sm"
+                        className="shrink-0 min-h-[42px] px-3 font-bold"
+                      >
+                        {renameSuccess ? <Check className="w-4 h-4" /> : t('settings.renameBtn')}
+                      </Button>
+                    </form>
+                  </div>
+                )}
+
                 {/* Langue */}
                 <div className="p-3.5 sm:p-4 bg-[#20243F] border border-[#2D3357] rounded-2xl">
                   <div className="flex items-center gap-2 mb-3">
@@ -362,7 +441,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   </label>
                 </div>
 
-                {/* Zone de Danger */}
+                {/* Supprimer ce compte */}
+                <div className="p-3.5 sm:p-4 bg-[#20243F] border border-[#2D3357] rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 className="font-bold text-xs sm:text-sm text-[#FF4D6D]">
+                      {t('settings.deleteAccountBtn')}
+                    </h4>
+                    <p className="text-[11px] text-[#A9ABC4] mt-0.5">
+                      Supprime uniquement le profil actif actuel ({currentAccount?.name}).
+                    </p>
+                  </div>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={handleDeleteProfile}
+                    className="min-h-[40px] px-3 text-xs"
+                  >
+                    Supprimer ce profil
+                  </Button>
+                </div>
+
+                {/* Zone de Danger (Wipe total) */}
                 <div className="p-3.5 sm:p-4 bg-[#FF4D6D]/10 border-2 border-[#FF4D6D] rounded-2xl space-y-2.5 sm:space-y-3">
                   <div className="flex items-center gap-2">
                     <AlertOctagon className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF4D6D]" />
@@ -379,7 +478,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                     onClick={handleWipe}
                     className="w-full min-h-[44px]"
                   >
-                    {t('settings.wipeVault')}
+                    {t('settings.wipeVault')} (Tous les profils)
                   </Button>
                 </div>
               </div>

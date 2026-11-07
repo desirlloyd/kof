@@ -1,5 +1,10 @@
 import { create } from 'zustand';
-import type { VaultMetadata, UserPreferences } from '../../types';
+import type {
+  UserAccount,
+  AccountSummary,
+  VaultMetadata,
+  UserPreferences,
+} from '../../types';
 import {
   generateSalt,
   deriveKeyFromPassword,
@@ -13,19 +18,25 @@ import {
   decryptData,
 } from '../../core/crypto/aes';
 import {
-  hasVault,
-  getMetadata,
-  initVault,
-  getEncryptedVaultEntries,
-  saveEncryptedVaultEntries,
-  updateVaultMetadata,
-  wipeVault,
-  getPreferences,
-  savePreferences,
+  getAllAccounts,
+  getAccount,
+  saveAccount,
+  deleteAccount,
+  updateAccountVault,
+  updateAccountMetadata,
+  updateAccountPreferences,
+  getStoredActiveAccountId,
+  setStoredActiveAccountId,
+  wipeAllData,
+  DEFAULT_PREFERENCES,
 } from '../../core/storage/repository';
 import { useVaultStore } from '../vault/vaultStore';
 
 interface AuthState {
+  accounts: AccountSummary[];
+  selectedAccount: AccountSummary | null;
+  currentAccount: UserAccount | null;
+  isCreatingNewAccount: boolean;
   isInitialized: boolean;
   isUnlocked: boolean;
   isLoading: boolean;
@@ -36,40 +47,49 @@ interface AuthState {
   lastActivity: number;
 
   checkStatus: () => Promise<void>;
-  setupVault: (masterPassword: string) => Promise<boolean>;
+  setSelectedAccount: (account: AccountSummary | null) => void;
+  setIsCreatingNewAccount: (isCreating: boolean) => void;
+  createAccount: (name: string, masterPassword: string, avatarColor?: string) => Promise<boolean>;
   unlockVault: (masterPassword: string) => Promise<boolean>;
   lockVault: () => void;
+  switchAccount: () => void;
+  renameAccount: (newName: string) => Promise<boolean>;
+  deleteCurrentAccount: () => Promise<boolean>;
   changeMasterPassword: (newMasterPassword: string) => Promise<boolean>;
   updateUserPreferences: (prefs: Partial<UserPreferences>) => Promise<void>;
   touchActivity: () => void;
-  wipeAllData: () => Promise<void>;
+  wipeEverything: () => Promise<void>;
   clearError: () => void;
 }
 
+const AVATAR_COLORS = ['#FFB400', '#19D3C5', '#FF4D6D', '#B6F23A', '#A78BFA'];
+
 export const useAuthStore = create<AuthState>((set, get) => ({
+  accounts: [],
+  selectedAccount: null,
+  currentAccount: null,
+  isCreatingNewAccount: false,
   isInitialized: false,
   isUnlocked: false,
   isLoading: true,
   error: null,
   cryptoKey: null,
   metadata: null,
-  preferences: {
-    theme: 'dark',
-    language: 'fr',
-    autoLockMinutes: 5,
-    clearClipboardSeconds: 20,
-  },
+  preferences: DEFAULT_PREFERENCES,
   lastActivity: Date.now(),
 
   checkStatus: async () => {
     try {
       set({ isLoading: true });
-      const initialized = await hasVault();
-      const meta = initialized ? await getMetadata() : null;
-      const prefs = await getPreferences();
+      const accounts = await getAllAccounts();
+      const lastActiveId = getStoredActiveAccountId();
+      const selected = accounts.find((a) => a.id === lastActiveId) || accounts[0] || null;
+
+      const isInitialized = accounts.length > 0;
 
       // Apply initial theme
-      if (prefs.theme === 'light') {
+      const currentPrefs = DEFAULT_PREFERENCES;
+      if (currentPrefs.theme === 'light') {
         document.documentElement.classList.remove('dark');
         document.documentElement.classList.add('light');
       } else {
@@ -78,26 +98,38 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       set({
-        isInitialized: initialized,
-        metadata: meta || null,
-        preferences: prefs,
+        accounts,
+        selectedAccount: selected,
+        isInitialized,
+        isCreatingNewAccount: !isInitialized,
         isLoading: false,
       });
     } catch (err) {
-      console.error('Failed to check vault status:', err);
+      console.error('Failed to check accounts status:', err);
       set({ isLoading: false, error: 'Database check failed' });
     }
   },
 
-  setupVault: async (masterPassword: string) => {
+  setSelectedAccount: (account) => {
+    if (account) setStoredActiveAccountId(account.id);
+    set({ selectedAccount: account, isCreatingNewAccount: false, error: null });
+  },
+
+  setIsCreatingNewAccount: (isCreating) => {
+    set({ isCreatingNewAccount: isCreating, error: null });
+  },
+
+  createAccount: async (name, masterPassword, customColor) => {
     try {
       set({ isLoading: true, error: null });
+
       const salt = generateSalt();
       const key = await deriveKeyFromPassword(masterPassword, salt, PBKDF2_ITERATIONS);
       const authCheck = await createAuthCheckToken(key);
 
+      const accountId = crypto.randomUUID();
       const metadata: VaultMetadata = {
-        id: 'default',
+        id: accountId,
         version: 1,
         salt: bufferToBase64(salt),
         iterations: PBKDF2_ITERATIONS,
@@ -106,39 +138,74 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         updatedAt: Date.now(),
       };
 
-      // Initial empty entries list encrypted
       const emptyPayload = await encryptData(JSON.stringify([]), key);
-      await initVault(metadata, emptyPayload);
+
+      const randomColor =
+        customColor || AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
+
+      const newAccount: UserAccount = {
+        id: accountId,
+        name: name.trim() || 'Mon Kòf',
+        avatarColor: randomColor,
+        createdAt: Date.now(),
+        lastLoginAt: Date.now(),
+        metadata,
+        vaultPayload: emptyPayload,
+        preferences: DEFAULT_PREFERENCES,
+      };
+
+      await saveAccount(newAccount);
+      setStoredActiveAccountId(accountId);
+
+      const updatedAccounts = await getAllAccounts();
+      const summary = updatedAccounts.find((a) => a.id === accountId) || null;
+
+      useVaultStore.getState().setEntries([]);
 
       set({
+        accounts: updatedAccounts,
+        selectedAccount: summary,
+        currentAccount: newAccount,
         isInitialized: true,
         isUnlocked: true,
+        isCreatingNewAccount: false,
         cryptoKey: key,
         metadata,
+        preferences: newAccount.preferences,
         isLoading: false,
         lastActivity: Date.now(),
       });
 
-      useVaultStore.getState().setEntries([]);
       return true;
     } catch (err) {
-      console.error('Error creating vault:', err);
-      set({ isLoading: false, error: 'Erreur lors de la création du coffre' });
+      console.error('Error creating account:', err);
+      set({ isLoading: false, error: 'Erreur lors de la création du compte' });
       return false;
     }
   },
 
-  unlockVault: async (masterPassword: string) => {
+  unlockVault: async (masterPassword) => {
     try {
       set({ isLoading: true, error: null });
-      const meta = get().metadata || (await getMetadata());
-      if (!meta) {
-        set({ isLoading: false, error: 'Aucun coffre trouvé' });
+      const { selectedAccount } = get();
+      if (!selectedAccount) {
+        set({ isLoading: false, error: 'Aucun compte sélectionné' });
         return false;
       }
 
-      const key = await deriveKeyFromPassword(masterPassword, meta.salt, meta.iterations);
-      const isValid = await verifyAuthCheckToken(meta.authCheck, key);
+      const account = await getAccount(selectedAccount.id);
+      if (!account) {
+        set({ isLoading: false, error: 'Compte introuvable' });
+        return false;
+      }
+
+      const key = await deriveKeyFromPassword(
+        masterPassword,
+        account.metadata.salt,
+        account.metadata.iterations,
+      );
+
+      const isValid = await verifyAuthCheckToken(account.metadata.authCheck, key);
 
       if (!isValid) {
         set({
@@ -148,24 +215,36 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return false;
       }
 
-      // Load encrypted vault entries
-      const encryptedPayload = await getEncryptedVaultEntries();
+      // Decrypt entries
       let entries = [];
-      if (encryptedPayload) {
-        const decryptedJson = await decryptData(encryptedPayload, key);
+      if (account.vaultPayload && account.vaultPayload.ciphertext) {
+        const decryptedJson = await decryptData(account.vaultPayload, key);
         entries = JSON.parse(decryptedJson);
       }
 
       useVaultStore.getState().setEntries(entries);
+      setStoredActiveAccountId(account.id);
+
+      // Update theme from account prefs
+      if (account.preferences.theme === 'light') {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.remove('light');
+        document.documentElement.classList.add('dark');
+      }
 
       set({
+        currentAccount: account,
+        metadata: account.metadata,
+        preferences: account.preferences || DEFAULT_PREFERENCES,
         isUnlocked: true,
         cryptoKey: key,
-        metadata: meta,
         isLoading: false,
         lastActivity: Date.now(),
         error: null,
       });
+
       return true;
     } catch (err) {
       console.error('Error unlocking vault:', err);
@@ -178,7 +257,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   lockVault: () => {
-    // Purge sensitive memory data immediately
     useVaultStore.getState().purge();
     set({
       isUnlocked: false,
@@ -187,9 +265,64 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
   },
 
-  changeMasterPassword: async (newMasterPassword: string) => {
-    const { cryptoKey, metadata } = get();
-    if (!cryptoKey || !metadata) return false;
+  switchAccount: () => {
+    useVaultStore.getState().purge();
+    set({
+      isUnlocked: false,
+      cryptoKey: null,
+      currentAccount: null,
+      error: null,
+    });
+  },
+
+  renameAccount: async (newName) => {
+    const { currentAccount } = get();
+    if (!currentAccount) return false;
+
+    const trimmed = newName.trim();
+    if (!trimmed) return false;
+
+    const updated: UserAccount = { ...currentAccount, name: trimmed };
+    await saveAccount(updated);
+
+    const accounts = await getAllAccounts();
+    const summary = accounts.find((a) => a.id === updated.id) || null;
+
+    set({
+      currentAccount: updated,
+      selectedAccount: summary,
+      accounts,
+    });
+    return true;
+  },
+
+  deleteCurrentAccount: async () => {
+    const { currentAccount } = get();
+    if (!currentAccount) return false;
+
+    await deleteAccount(currentAccount.id);
+    useVaultStore.getState().purge();
+
+    const accounts = await getAllAccounts();
+    const nextSelected = accounts[0] || null;
+
+    set({
+      accounts,
+      selectedAccount: nextSelected,
+      currentAccount: null,
+      isUnlocked: false,
+      cryptoKey: null,
+      isInitialized: accounts.length > 0,
+      isCreatingNewAccount: accounts.length === 0,
+      error: null,
+    });
+
+    return true;
+  },
+
+  changeMasterPassword: async (newMasterPassword) => {
+    const { cryptoKey, currentAccount } = get();
+    if (!cryptoKey || !currentAccount) return false;
 
     try {
       set({ isLoading: true });
@@ -204,7 +337,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const newAuthCheck = await createAuthCheckToken(newKey);
 
       const newMetadata: VaultMetadata = {
-        ...metadata,
+        ...currentAccount.metadata,
         salt: bufferToBase64(newSalt),
         authCheck: newAuthCheck,
         updatedAt: Date.now(),
@@ -212,12 +345,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       const newEncryptedPayload = await encryptData(JSON.stringify(currentEntries), newKey);
 
-      await saveEncryptedVaultEntries(newEncryptedPayload);
-      await updateVaultMetadata(newMetadata);
+      await updateAccountVault(currentAccount.id, newEncryptedPayload);
+      await updateAccountMetadata(currentAccount.id, newMetadata);
+
+      const updatedAccount: UserAccount = {
+        ...currentAccount,
+        metadata: newMetadata,
+        vaultPayload: newEncryptedPayload,
+      };
 
       set({
         cryptoKey: newKey,
         metadata: newMetadata,
+        currentAccount: updatedAccount,
         isLoading: false,
         lastActivity: Date.now(),
       });
@@ -229,9 +369,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  updateUserPreferences: async (newPrefs: Partial<UserPreferences>) => {
-    const updated = { ...get().preferences, ...newPrefs };
-    await savePreferences(updated);
+  updateUserPreferences: async (newPrefs) => {
+    const { currentAccount, preferences } = get();
+    const updated = { ...preferences, ...newPrefs };
+
+    if (currentAccount) {
+      await updateAccountPreferences(currentAccount.id, updated);
+      set({
+        preferences: updated,
+        currentAccount: { ...currentAccount, preferences: updated },
+      });
+    } else {
+      set({ preferences: updated });
+    }
 
     if (newPrefs.theme) {
       if (newPrefs.theme === 'light') {
@@ -242,20 +392,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         document.documentElement.classList.add('dark');
       }
     }
-
-    set({ preferences: updated });
   },
 
   touchActivity: () => {
     set({ lastActivity: Date.now() });
   },
 
-  wipeAllData: async () => {
-    await wipeVault();
+  wipeEverything: async () => {
+    await wipeAllData();
     useVaultStore.getState().purge();
     set({
+      accounts: [],
+      selectedAccount: null,
+      currentAccount: null,
       isInitialized: false,
       isUnlocked: false,
+      isCreatingNewAccount: true,
       cryptoKey: null,
       metadata: null,
       error: null,

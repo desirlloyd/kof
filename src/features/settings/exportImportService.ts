@@ -1,40 +1,42 @@
 import type { VaultMetadata, EncryptedPayload } from '../../types';
-import { getMetadata, getEncryptedVaultEntries } from '../../core/storage/repository';
+import { useAuthStore } from '../auth/authStore';
 import { useVaultStore } from '../vault/vaultStore';
 
 export interface KofBackupFile {
   format: 'KOF_ENCRYPTED_BACKUP_V1';
   timestamp: number;
+  accountName: string;
   metadata: VaultMetadata;
   vaultPayload: EncryptedPayload;
 }
 
 /**
- * Télécharge un fichier chiffré .kof complet
+ * Télécharge un fichier chiffré .kof complet pour le compte actif
  */
 export async function exportEncryptedBackup(): Promise<boolean> {
   try {
-    const metadata = await getMetadata();
-    const vaultPayload = await getEncryptedVaultEntries();
+    const account = useAuthStore.getState().currentAccount;
 
-    if (!metadata || !vaultPayload) {
-      throw new Error('Données du coffre introuvables.');
+    if (!account || !account.metadata || !account.vaultPayload) {
+      throw new Error('Données du compte introuvables.');
     }
 
     const backupData: KofBackupFile = {
       format: 'KOF_ENCRYPTED_BACKUP_V1',
       timestamp: Date.now(),
-      metadata,
-      vaultPayload,
+      accountName: account.name,
+      metadata: account.metadata,
+      vaultPayload: account.vaultPayload,
     };
 
+    const sanitizedName = account.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
     const blob = new Blob([JSON.stringify(backupData, null, 2)], {
       type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `kof-backup-${new Date().toISOString().slice(0, 10)}.kof`;
+    a.download = `kof-${sanitizedName}-${new Date().toISOString().slice(0, 10)}.kof`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

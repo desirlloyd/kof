@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { VaultEntry, VaultCategory } from '../../types';
 import { encryptData } from '../../core/crypto/aes';
-import { saveEncryptedVaultEntries } from '../../core/storage/repository';
+import { updateAccountVault } from '../../core/storage/repository';
 import { useAuthStore } from '../auth/authStore';
 
 interface VaultState {
@@ -49,8 +49,10 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   setIsEditing: (isEditing) => set({ isEditing }),
 
   addEntry: async (entryData) => {
-    const key = useAuthStore.getState().cryptoKey;
-    if (!key) return false;
+    const auth = useAuthStore.getState();
+    const key = auth.cryptoKey;
+    const account = auth.currentAccount;
+    if (!key || !account) return false;
 
     const newEntry: VaultEntry = {
       ...entryData,
@@ -62,9 +64,9 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     const updatedEntries = [newEntry, ...get().entries];
     try {
       const payload = await encryptData(JSON.stringify(updatedEntries), key);
-      await saveEncryptedVaultEntries(payload);
+      await updateAccountVault(account.id, payload);
       set({ entries: updatedEntries, activeEntryId: newEntry.id, isEditing: false });
-      useAuthStore.getState().touchActivity();
+      auth.touchActivity();
       return true;
     } catch (err) {
       console.error('Failed to save new entry:', err);
@@ -73,8 +75,10 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   },
 
   updateEntry: async (id, updates) => {
-    const key = useAuthStore.getState().cryptoKey;
-    if (!key) return false;
+    const auth = useAuthStore.getState();
+    const key = auth.cryptoKey;
+    const account = auth.currentAccount;
+    if (!key || !account) return false;
 
     const updatedEntries = get().entries.map((entry) =>
       entry.id === id ? { ...entry, ...updates, updatedAt: Date.now() } : entry,
@@ -82,9 +86,9 @@ export const useVaultStore = create<VaultState>((set, get) => ({
 
     try {
       const payload = await encryptData(JSON.stringify(updatedEntries), key);
-      await saveEncryptedVaultEntries(payload);
+      await updateAccountVault(account.id, payload);
       set({ entries: updatedEntries, isEditing: false });
-      useAuthStore.getState().touchActivity();
+      auth.touchActivity();
       return true;
     } catch (err) {
       console.error('Failed to update entry:', err);
@@ -93,18 +97,20 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   },
 
   deleteEntry: async (id) => {
-    const key = useAuthStore.getState().cryptoKey;
-    if (!key) return false;
+    const auth = useAuthStore.getState();
+    const key = auth.cryptoKey;
+    const account = auth.currentAccount;
+    if (!key || !account) return false;
 
     const updatedEntries = get().entries.filter((entry) => entry.id !== id);
     try {
       const payload = await encryptData(JSON.stringify(updatedEntries), key);
-      await saveEncryptedVaultEntries(payload);
+      await updateAccountVault(account.id, payload);
       set({
         entries: updatedEntries,
         activeEntryId: get().activeEntryId === id ? null : get().activeEntryId,
       });
-      useAuthStore.getState().touchActivity();
+      auth.touchActivity();
       return true;
     } catch (err) {
       console.error('Failed to delete entry:', err);

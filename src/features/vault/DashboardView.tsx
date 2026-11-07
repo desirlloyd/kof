@@ -34,7 +34,7 @@ import type { VaultEntry } from '../../types';
 
 export const DashboardView: React.FC = () => {
   const { t } = useTranslation();
-  const { lockVault, touchActivity, preferences, lastActivity } = useAuthStore();
+  const { lockVault, touchActivity, preferences, lastActivity, currentAccount, switchAccount } = useAuthStore();
   const {
     entries,
     searchQuery,
@@ -246,6 +246,23 @@ export const DashboardView: React.FC = () => {
             <span className="hidden sm:inline">{t('vault.newEntry')}</span>
             <span className="sm:hidden">Nouveau</span>
           </Button>
+
+          {/* Account Profile Badge & Switcher */}
+          <button
+            onClick={switchAccount}
+            className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 bg-[#20243F] hover:bg-[#2D3357] border border-[#2D3357] hover:border-[#FFB400] rounded-xl text-xs font-bold transition-all min-h-[36px]"
+            title={t('auth.switchAccount')}
+          >
+            <div
+              style={{ backgroundColor: currentAccount?.avatarColor || '#FFB400' }}
+              className="w-5 h-5 rounded-md flex items-center justify-center text-[#0E1020] font-black text-[10px] shrink-0"
+            >
+              {currentAccount?.name.charAt(0).toUpperCase() || 'K'}
+            </div>
+            <span className="hidden sm:inline text-[#FFF6E5] truncate max-w-[80px]">
+              {currentAccount?.name}
+            </span>
+          </button>
 
           {/* Desktop Settings Button */}
           <button

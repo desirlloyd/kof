@@ -32,6 +32,32 @@ export interface VaultMetadata {
   updatedAt: number;
 }
 
+export interface UserPreferences {
+  theme: AppTheme;
+  language: AppLanguage;
+  autoLockMinutes: number; // default 5, 0 = disabled
+  clearClipboardSeconds: number; // default 20
+}
+
+export interface UserAccount {
+  id: string;
+  name: string;
+  avatarColor: string;
+  createdAt: number;
+  lastLoginAt?: number;
+  metadata: VaultMetadata;
+  vaultPayload: EncryptedPayload;
+  preferences: UserPreferences;
+}
+
+export interface AccountSummary {
+  id: string;
+  name: string;
+  avatarColor: string;
+  createdAt: number;
+  lastLoginAt?: number;
+}
+
 export interface SecurityScoreItem {
   type: 'weak' | 'reused' | 'old' | 'missing-2fa';
   entryId: string;
@@ -53,10 +79,3 @@ export type MascotMood = 'neutral' | 'happy' | 'worried' | 'sleeping';
 
 export type AppTheme = 'dark' | 'light';
 export type AppLanguage = 'fr' | 'ht' | 'en';
-
-export interface UserPreferences {
-  theme: AppTheme;
-  language: AppLanguage;
-  autoLockMinutes: number; // default 5, 0 = disabled
-  clearClipboardSeconds: number; // default 20
-}
